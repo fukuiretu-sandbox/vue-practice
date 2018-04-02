@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <title>Document</title>
+</head>
+
+<body>
+  <div id="app">
+  </div>
+
+  <script>
+    // Vue.component('friend-component', {
+    //   props: ['friend'],
+    //   filters: {
+    //     ageInOneYear(age) {
+    //       return age + 1;
+    //     },
+    //     fullName(value) {
+    //       return `${value.last}, ${value.first}`;
+    //     }
+    //   },
+    //   methods: {
+    //     decrementAge(friend) {
+    //       friend.age = friend.age - 1;
+    //     },
+    //     incrementAge(friend) {
+    //       friend.age = friend.age + 1;
+    //     }
+    //   },
+    //   template: `
+    //     <div>
+    //       <h4>{{ friend | fullName }}</h4>
+    //       <h5>age: {{ friend.age }}</h5>
+    //       <button v-on:click="decrementAge(friend)">-</button>
+    //       <button v-on:click="incrementAge(friend)">+</button>
+    //       <input v-model="friend.first"/>
+    //       <input v-model="friend.last"/>
+    //     </div>
+    //   `
+    // });
+
+    // const app = new Vue({
+    //   el: "#app",
+    //   data: {
+    //     friends: [
+    //       {
+    //         first: "Bobby",
+    //         last: "Boone",
+    //         age: 25
+    //       },
+    //       {
+    //         first: "John",
+    //         last: "Boone",
+    //         age: 35
+    //       }
+    //     ]
+    //   },
+    //   template: `
+    //     <div>
+    //       <friend-component v-for="item in friends" v-bind:friend="item" />
+    //     </div>
+    //   `
+    // });
+    const app = new Vue({
+      el: "#app",
+      data: {
+        editFriend: null,
+        friends: []
+      },
+      methods: {
+        deleteFriend(id, i) {
+          fetch("http://rest.learncode.academy/api/learncode/friends" + id, {
+            method: "DELETE"
+          })
+            .then(() => {
+              this.friends.splice(i, 1);
+            })
+        },
+        updateFriend(friend) {
+          fetch("http://rest.learncode.academy/api/learncode/friends" + friend.id, {
+            body: JSON.stringify(friend),
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+            .then(() => {
+              this.editFriend = null;
+            })
+        }
+      },
+      mounted() {
+        fetch("http://rest.learncode.academy/api/learncode/friends")
+          .then(response => response.json())
+          .then((data) => {
+            console.log(data);
+
+            this.friends = data;
+          })
+      },
+      template: `
+        <div>
+          <li v-for="friend, i in friends">
+            <div v-if="friend.name !== ''">
+              <div v-if="editFriend === friend.id">
+                <input v-on:keyup.13="updateFriend(friend)" v-model="friend.name" />
+                <button v-on:click="updateFriend(friend)">save</button>
+              </div>
+              <div v-else>
+                <button v-on:click="editFriend = friend.id">edit</button>
+                <button v-on:click="deleteFriend(friend.id, i)">x</button>
+                {{friend.name}}
+              </div>
+            </div>
+          </li>
+        </div>
+      `
+    })
+  </script>
+</body>
+
+</html>
